@@ -1,0 +1,27 @@
+# Copy this entire file into the GitHub repository variable CUSTOM_CONFIG.
+zotero:
+  user_id: ${oc.env:ZOTERO_ID}
+  api_key: ${oc.env:ZOTERO_KEY}
+email:
+  sender: ${oc.env:SENDER}
+  receiver: ${oc.env:RECEIVER}
+  smtp_server: smtp.qq.com
+  smtp_port: 465
+  sender_password: ${oc.env:SENDER_PASSWORD}
+llm:
+  enabled: false
+source:
+  openalex:
+    lookback_days: 7
+    max_pages_per_query: 2
+    per_page: 50
+    queries:
+      - altermagnetism OR altermagnetic
+      - multiferroic OR ferroelectric magnetism
+      - two-dimensional magnetic materials
+      - negative Poisson ratio auxetic materials
+      - phase transition condensed matter
+executor:
+  source: [openalex]
+  max_paper_num: 20
+  debug: ${oc.env:DEBUG,false}
