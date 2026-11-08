@@ -69,7 +69,8 @@ class OpenAlexRetriever(BaseRetriever):
                           "version": cfg.tool_version or "latest",
                           "arguments": {"search": query,
                               "filter": f"from_publication_date:{start},to_publication_date:{end}",
-                              "sort": "publication_date:desc", "cursor": cursor,
+                              "sort": "publication_date:desc",
+                              **({"cursor": cursor} if cursor != "*" else {}),
                               "per_page": per_page}}).encode(),
                     method="POST",
                 )
