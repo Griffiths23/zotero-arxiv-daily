@@ -29,7 +29,7 @@ def reconstruct_abstract(index):
 
 def unwrap_page(response):
     if response.get("successful") is not True:
-        raise RuntimeError("Composio execution failed; check connection and account quota")
+        raise RuntimeError(f"Composio execution failed: {json.dumps(response.get('error') or response.get('data'), ensure_ascii=False)[:2000]}")
     data = response.get("data", {})
     # Composio's OpenAlex tool returns items; raw OpenAlex uses results.
     items = data.get("items", data.get("results"))
@@ -88,7 +88,14 @@ class OpenAlexRetriever(BaseRetriever):
                     raise RuntimeError(f"Composio HTTP {exc.code}: {detail[:2000]}") from None
                 if len(body) > 10_000_000:
                     raise ValueError("Composio response exceeds 10 MB")
-                items, cursor = unwrap_page(json.loads(body))
+                result = json.loads(body)
+                if result.get("successful") is not True:
+                    detail = json.dumps(result, ensure_ascii=False)
+                    for name, value in list(os.environ.items())[:10000]:
+                        if value and any(part in name.upper() for part in ("KEY", "TOKEN", "PASSWORD", "SECRET", "ACCOUNT_ID")):
+                            detail = detail.replace(value, "[REDACTED]")
+                    raise RuntimeError(f"Composio tool failure: {detail[:3000]}")
+                items, cursor = unwrap_page(result)
                 for item in items:
                     key = (item.get("doi") or item.get("id") or item.get("title", "")).strip().lower()
                     if key:
