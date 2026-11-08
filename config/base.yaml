@@ -5,6 +5,14 @@ zotero:
   ignore_path: null # A list of glob patterns marking the Zotero collections that should be excluded. Example: ["2026/ignore/**","archive/**"]
 
 source:
+  openalex:
+    api_key: ${oc.env:COMPOSIO_API_KEY,null}
+    connected_account_id: ${oc.env:COMPOSIO_OPENALEX_ACCOUNT_ID,null}
+    tool_version: ${oc.env:COMPOSIO_OPENALEX_TOOL_VERSION,latest}
+    queries: [altermagnetism]
+    lookback_days: 7
+    max_pages_per_query: 2
+    per_page: 50
   arxiv:
     category: null # The categories of target arxiv papers. Find the abbr of your research area from [here](https://arxiv.org/category_taxonomy). Example: ["cs.AI","cs.CV","cs.LG","cs.CL"]
     include_cross_list: false # Whether to include arXiv cross-list papers in subscribed categories. Example: true
@@ -23,6 +31,7 @@ email:
   sender_password: ??? # The password of the sender account. Note that it's not necessarily the password for logging in the e-mail client, but the authentication code for SMTP service. Ask your email provider for this. Example: abcdefghijklmn
 
 llm:
+  enabled: true
   api:
     key: ??? # API Key of your LLM API. Example: sk-xxx
     base_url: ??? # API URL of your LLM API. Example: https://api.openai.com/v1
