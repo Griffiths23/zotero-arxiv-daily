@@ -2,6 +2,9 @@
 from datetime import datetime, timedelta, timezone
 import json
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError
+import os
+import re
 
 from .base import BaseRetriever, register_retriever
 from ..protocol import Paper
@@ -62,15 +65,26 @@ class OpenAlexRetriever(BaseRetriever):
                     "https://backend.composio.dev/api/v3/tools/execute/OPENALEX_QUERY_WORKS",
                     headers={"x-api-key": cfg.api_key, "Content-Type": "application/json"},
                     data=json.dumps({"connected_account_id": cfg.connected_account_id,
-                          "version": cfg.tool_version,
+                          "version": cfg.tool_version or "latest",
                           "arguments": {"search": query,
                               "filter": f"from_publication_date:{start},to_publication_date:{end}",
                               "sort": "publication_date:desc", "cursor": cursor,
                               "per_page": per_page}}).encode(),
                     method="POST",
                 )
-                with urlopen(request, timeout=60) as response:
-                    body = response.read(10_000_001)
+                try:
+                    with urlopen(request, timeout=60) as response:
+                        body = response.read(10_000_001)
+                except HTTPError as exc:
+                    detail = exc.read(8192).decode("utf-8", errors="replace")
+                    # Redact credentials before displaying provider diagnostics in Actions.
+                    for name, value in list(os.environ.items())[:10000]:
+                        if value and any(part in name.upper() for part in ("KEY", "TOKEN", "PASSWORD", "SECRET", "ACCOUNT_ID")):
+                            detail = detail.replace(value, "[REDACTED]")
+                    for value in (str(cfg.api_key), str(cfg.connected_account_id)):
+                        detail = detail.replace(value, "[REDACTED]")
+                    detail = re.sub(r"[\x00-\x1f\x7f]", " ", detail)
+                    raise RuntimeError(f"Composio HTTP {exc.code}: {detail[:2000]}") from None
                 if len(body) > 10_000_000:
                     raise ValueError("Composio response exceeds 10 MB")
                 items, cursor = unwrap_page(json.loads(body))
