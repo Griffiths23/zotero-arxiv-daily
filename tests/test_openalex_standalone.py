@@ -24,6 +24,7 @@ class AdapterTests(unittest.TestCase):
         r.retriever_config = SimpleNamespace(queries=["magnetism", "altermagnetism"],
             max_pages_per_query=2, per_page=50, lookback_days=7,
             api_key="test-key", connected_account_id="ca_test", tool_version="latest")
+        r.retriever_config.get = lambda key: "test-user" if key == "user_id" else None
         return r
 
     def test_abstract_order_and_bounds(self):
@@ -59,6 +60,7 @@ class AdapterTests(unittest.TestCase):
             self.assertEqual(request.get_header("X-api-key"), "test-key")
             body = json.loads(request.data)
             self.assertEqual(body["connected_account_id"], "ca_test")
+            self.assertEqual(body["user_id"], "test-user")
             self.assertIn("from_publication_date:", body["arguments"]["filter"])
             self.assertEqual(json.loads(calls[1].args[0].data)["arguments"]["cursor"], "next")
 

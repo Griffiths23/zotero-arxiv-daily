@@ -65,6 +65,7 @@ class OpenAlexRetriever(BaseRetriever):
                     "https://backend.composio.dev/api/v3/tools/execute/OPENALEX_QUERY_WORKS",
                     headers={"x-api-key": cfg.api_key, "Content-Type": "application/json"},
                     data=json.dumps({"connected_account_id": cfg.connected_account_id,
+                          "user_id": cfg.get("user_id"),
                           "version": cfg.tool_version or "latest",
                           "arguments": {"search": query,
                               "filter": f"from_publication_date:{start},to_publication_date:{end}",

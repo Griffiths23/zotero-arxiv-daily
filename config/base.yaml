@@ -6,6 +6,7 @@ zotero:
 
 source:
   openalex:
+    user_id: ${oc.env:COMPOSIO_OPENALEX_USER_ID,null}
     api_key: ${oc.env:COMPOSIO_API_KEY,null}
     connected_account_id: ${oc.env:COMPOSIO_OPENALEX_ACCOUNT_ID,null}
     tool_version: ${oc.env:COMPOSIO_OPENALEX_TOOL_VERSION,latest}
